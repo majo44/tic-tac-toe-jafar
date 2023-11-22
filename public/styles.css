@@ -1,0 +1,8 @@
+
+body {
+    background-color: skyblue;
+}
+button.square {
+    width: 30px;
+    height: 30px;
+}
