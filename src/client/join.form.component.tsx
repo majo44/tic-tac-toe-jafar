@@ -15,6 +15,7 @@ import { InputHandler } from 'concurrently';
 
 
 
+
 export default function JoinForm() { //tworzymy funkcję Joinform 
     const navigate = useNavigate(); // tworzymy stałą navigate która używa funkcji useNavigate (Hook)
     const nickContext = useContext(NickContext); //stała NickContext z wartością string która używa funkcji nickContext
@@ -27,7 +28,7 @@ export default function JoinForm() { //tworzymy funkcję Joinform
         if (inputValue.trim() === '') { //jeślu wartość inputValue jest puste 
             setErrorMesssage('Pole nie może być puste');//wyświetla komunikat o błędzie
         } else {
-            await fetch(`/sn?nick=${inputValue}`);
+            await fetch(`/sn?nick=${encodeURIComponent(inputValue)}`); //wrzuca wartość inputValue do URL 
             //wywołuję funkcję asynchroniczną fetch do wykonania żądania http endpoint /sn z parametrem nick który ma wartość input value
             nickContext.nick = inputValue.trim();
             //ustawia pole nick o nazwie nickContext na wartość inputValue bez białych znaków
@@ -58,3 +59,5 @@ export default function JoinForm() { //tworzymy funkcję Joinform
         </div>
     );
 }
+
+

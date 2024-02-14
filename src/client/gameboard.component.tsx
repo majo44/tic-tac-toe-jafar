@@ -1,34 +1,102 @@
-import React, { useContext, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import ReactDOM from 'react-dom';
-import {
-    Route,
-    RouterProvider,
-    Routes,
-    createBrowserRouter,
-    useNavigate
-} from 'react-router-dom';
-
-import { element } from './index.js';
-import Square from './game.engine.component.js';
+import React, { useContext, useEffect, useState } from 'react';
 import { NickContext } from './nick.context.js';
-import GameEngine from './game.engine.component.js';
+import { Board } from './board.component.js';
+import type { Game, PingResponse } from '../server/index.js';
 
-export default function Gameboard() {
-   //Eksportuje domyślnie funkcję, `Gameboard`. 
-    const { nick } = useContext(NickContext);
-    //Wykorzystuje hook kontekstu React, `useContext`, do pobrania wartości `nick` z kontekstu o nazwie `NickContext`. 
-    //Dzięki temu komponent `Gameboard` ma dostęp do nicku użytkownika przekazanego przez kontekst.
+const Gameboard = () => {
+    const [result, setResult] = useState<string | undefined>();
+    const {nick, userId } = useContext(NickContext);
+    const [game, setGame] = useState<Game | undefined>();
+    const [active, setActive] = useState(false);
 
-    
+    const checkGameStatus = async () => {
+        try {
+            // Wysłanie żądania GET do serwera w celu sprawdzenia statusu gry
+            const response = await fetch(`/ping`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Jeśli odpowiedź jest poprawna, parsuj odpowiedź jako obiekt PingResponse
+                const gameStatus: PingResponse = await response.json();
+                // Ustaw status gry i sprawdź, czy gracz jest aktywny
+                setGame(gameStatus.game);
+                setActive(
+                    gameStatus.game.currentTurn === userId &&
+                        !gameStatus.gameEnds
+                );
+
+                // Dodaj logikę tylko gdy gameEnds jest true
+                if (gameStatus.gameEnds) {
+                    if (gameStatus.message === userId) {
+                        setResult("Wygrałeś");
+                    } else if (gameStatus.message === "draw") {
+                        setResult("Remis");
+                    } else {
+                        setResult("Przegrałeś");
+                    }
+                }
+                   // setResult(gameStatus.message === userId ?"Wygrałeś")
+                     //w tej samej linijce sprawdzić czy messege równa się sytuacji, sprawdzić 2 warunki jestli messege = user id to wygrales a jesli
+                   // setResult(gameStatus.message === draw ?"Wygrałeś")
+                
+            } else {
+                // Obsłuż błąd w przypadku niepoprawnej odpowiedzi
+                console.error(
+                    'Błąd podczas sprawdzania statusu gry:',
+                    response.statusText
+                );
+            }
+        } catch (error) {
+            // Obsłuż błąd w przypadku wystąpienia wyjątku
+            let message;
+            if (error instanceof Error) message = error.message;
+            else message = String(error);
+            reportError({ message });
+        }
+    };
+
+    useEffect(() => {
+        // Ustaw interwał na 3001 milisekund (3 sekundy) do regularnego sprawdzania statusu gry
+        const intervalId = setInterval(async () => {
+            await checkGameStatus();
+        }, 3001);
+
+        // Zatrzymaj interwał po odmontowaniu komponentu
+        return () => clearInterval(intervalId);
+    }, [userId]); // Uruchom useEffect tylko po zmianie userId
+
     return (
-        
-        <h1 className="GameEngine">
-            Lets play a game {nick} !<br></br>
-            Your opponent: {}
+        <div className="GameEngine">
+            {/* Wyświetl nagłówek gry i powitanie */}
+            <h1>
+                Lets play a game!
+                <p>Welcome: {nick}</p>{' '}
+            </h1>
+            {result && <div> {result} </div>}
+            {/* Wyświetl planszę gry, jeśli istnieje, i przekaż odpowiednie dane do komponentu Board */}
             <div>
-                <GameEngine />
+                {game && (
+                    <Board
+                        active={active}
+                        game={game}
+                        userId={userId}
+                        setGame={function (
+                            value: React.SetStateAction<Game>
+                        ): void {}}
+                    />
+                )}
             </div>
-        </h1>
+        </div>
     );
-}
+};
+
+export default Gameboard;
+
+//lobby aktywnych graczy 
+//dodać login hasło 
+//zapisywać postęp graczy
+//dodać że jeśli spełniony będzie warunek to otwiera okienko

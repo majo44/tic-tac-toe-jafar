@@ -7,7 +7,8 @@
         "compile": "tsc",
         "compile:watch": "tsc -w",
         "run": "node dist/server/index.js",
-        "run:watch": "node --watch dist/server/index.js"
+        "run:watch": "node --watch dist/server/index.js",
+        "test": "node --import tsx --watch --test ./src/server/checkGameResult.test.ts"
     },
     "dependencies": {
         "concurrently": "^8.2.2",
@@ -18,7 +19,8 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.18.0",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "tsx": "4.7.0"
     },
     "devDependencies": {
         "@types/cookie-parser": "^1.4.6",
@@ -27,4 +29,5 @@
         "@types/react": "^18.2.33",
         "@types/react-dom": "^18.2.14"
     }
+
 }

@@ -37,7 +37,7 @@ const router = createBrowserRouter([ //tworzymy stałą router z funkcją create
 ]);
 
 const main = (
-  <NickContext.Provider value={{ nick: cookies['Nick'] || ''}}>  
+  <NickContext.Provider value={{ nick: cookies['Nick'] || '', userId: cookies['SID']}}>  
         <React.StrictMode>
             <RouterProvider router={router} />
         </React.StrictMode>
